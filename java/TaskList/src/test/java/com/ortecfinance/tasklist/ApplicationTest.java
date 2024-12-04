@@ -8,7 +8,7 @@ import java.io.*;
 import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+// import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class ApplicationTest {
     public static final String PROMPT = "> ";

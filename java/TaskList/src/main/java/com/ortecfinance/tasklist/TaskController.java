@@ -2,7 +2,7 @@ package com.ortecfinance.tasklist;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;// this will import all below classes
 // import org.springframework.web.bind.annotation.GetMapping;
 // import org.springframework.web.bind.annotation.PathVariable;
 // import org.springframework.web.bind.annotation.PostMapping;
@@ -12,11 +12,10 @@ import org.springframework.web.bind.annotation.*;
 // import org.springframework.web.bind.annotation.RequestParam;
 // import org.springframework.web.bind.annotation.RestController;
 
-// import java.time.LocalDate;
-// import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;// this will import all below classes
+// import java.util.HashMap;
+// import java.util.List;
+// import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -26,54 +25,89 @@ public class TaskController {
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
-
-    // @GetMapping
-    // public List<String> getTasks() {
-    //     return Arrays.asList("Task 1", "Task 2", "Task 3");
-//      }
     }
 
+    // Default endpoint - additional endpoint 
+    @GetMapping("/")
+    public ResponseEntity<Map<String, String>> defaultEndpoint() {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Welcome to the Task API");
+        response.put("instructions", "Refer to the API documentation for available endpoints.");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //Create Project 
     @PostMapping("/projects")
     public ResponseEntity<Map<String, String>> createProject(@RequestBody Map<String, String> payload) {
-    String projectName = payload.get("projectName");
-    String projectId = taskService.addProject(projectName);
+        String projectName = payload.get("projectName");
+        String projectId = taskService.addProject(projectName);
 
-    // Create a response map to hold the project ID and the success message
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Project created successfully");
-    response.put("projectId", projectId);
+       // show project ID and the success message
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "project created successfully");
+        response.put("projectId", projectId);
 
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
 }
-
+    //Create Task
     @PostMapping("/projects/{project_id}/tasks")
     public ResponseEntity<Map<String, String>> createTask(@PathVariable String project_id, @RequestBody Map<String, String> payload) {
-    System.out.println("Received project_id: " + project_id);
-    System.out.println("Received description: " + payload.get("description"));
+         System.out.println("project_id: " + project_id);
+         System.out.println("description: " + payload.get("description"));
     
-    String description = payload.get("description");
-    long taskId = taskService.addTask(project_id, description);
+         String description = payload.get("description");
+         long taskId = taskService.addTask(project_id, description);
 
-    // Create a response map to hold the task ID and the success message
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Task created successfully");
-    response.put("taskId", String.valueOf(taskId));
+         // show task ID and the success message
+         Map<String, String> response = new HashMap<>();
+         response.put("message", "Task created successfully");
+         response.put("taskId", String.valueOf(taskId));
 
-    return new ResponseEntity<>(response, HttpStatus.CREATED);
+         return new ResponseEntity<>(response, HttpStatus.CREATED);
 }
-
+    //add Task deadline
     @PutMapping("/projects/{project_id}/tasks/{task_id}") 
     public ResponseEntity<String> updateTaskDeadline(@PathVariable String project_id, @PathVariable long task_id, @RequestParam String deadline) { 
         taskService.setDeadline(task_id, deadline); 
         return new ResponseEntity<>("Task deadline updated successfully", HttpStatus.OK); 
     }
-
-    @GetMapping("/view_by_deadline")
+    //View tasks by deadline
+    @GetMapping("/projects/view_by_deadline")
     public ResponseEntity<Map<String, Map<String, List<Map<String, Object>>>>> viewByDeadline() {
-    Map<String, Map<String, List<Map<String, Object>>>> tasksByDeadline = taskService.viewByDeadline();
-    return new ResponseEntity<>(tasksByDeadline, HttpStatus.OK);
+        Map<String, Map<String, List<Map<String, Object>>>> tasksByDeadline = taskService.viewByDeadline();
+        return new ResponseEntity<>(tasksByDeadline, HttpStatus.OK);
 }
 
+    //NOTE: Below are additional endpoint added by me, as I am experimenting and practicing - this endpoints are not mentioned in README file
+
+    // get tasks
+    @GetMapping("/all_tasks")
+    public ResponseEntity<List<Map<String, Object>>> getAllTasks() {
+    List<Map<String, Object>> tasks = taskService.getTasks()
+        .entrySet()
+        .stream()
+        .flatMap(entry -> entry.getValue().stream().map(task -> {
+            Map<String, Object> taskDetails = new HashMap<>();
+            taskDetails.put("project", entry.getKey()); // Add project name
+            taskDetails.put("description", task.getDescription()); // Add task description
+            taskDetails.put("done", task.isDone()); // indicate if the task is done
+            return taskDetails;
+        }))
+        .toList();
+      return new ResponseEntity<>(tasks, HttpStatus.OK);
+     }
+
+    //end point for done status
+   @PutMapping("/projects/{project_id}/tasks/{task_id}/done")
+   public ResponseEntity<String> updateTaskStatus(@PathVariable String project_id, @PathVariable long task_id, @RequestParam boolean done) {
+        taskService.setDone(task_id, done);
+        return new ResponseEntity<>("Task status updated successfully", HttpStatus.OK);
+
+        }
+
+
 }
+
+
 
 

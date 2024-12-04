@@ -8,8 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-// import java.time.LocalDate;
-// import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class TaskControllerTest {
 
         when(taskService.viewByDeadline()).thenReturn(projectTasks);
 
-        mockMvc.perform(get("/tasks/view_by_deadline"))
+        mockMvc.perform(get("/tasks/projects/view_by_deadline"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.['31-12-2024'].['New Project'][0].id").value(1))
                 .andExpect(jsonPath("$.['31-12-2024'].['New Project'][0].description").value("New Task"))
