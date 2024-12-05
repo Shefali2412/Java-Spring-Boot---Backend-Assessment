@@ -252,8 +252,8 @@ private void viewByDeadline() {
         out.println("  check <task ID>");
         out.println("  uncheck <task ID>");
         out.println("  deadline <task ID> <date> (format: DD-MM-YYYY)");//new command
-        out.println("  today");// new command
-        out.println("  view-by-deadline"); // new command
+        out.println("  today");// added new command
+        out.println("  view-by-deadline"); //added new command
         out.println();
     }
 

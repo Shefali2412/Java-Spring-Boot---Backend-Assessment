@@ -16,25 +16,27 @@ public class TaskService {
     private final Map<String, String> projectNames = new HashMap<>();
     private long lastProjectId = 0;
     private long lastTaskId = 0;
-
+    
+    //Adds a new project
     public String addProject(String name) {
         String projectId = "P" + (++lastProjectId);
         projectNames.put(projectId, name);
         tasks.put(projectId, new ArrayList<>());
         return projectId;
     }
-
-    public long addTask(String project, String description) {
-        List<Task> projectTasks = tasks.get(project);
+    
+    // Adds a task to a specific project
+    public long addTask(String projectId, String description) {
+        List<Task> projectTasks = tasks.get(projectId);
         if (projectTasks == null) {
-            throw new IllegalArgumentException(String.format("Could not find a project with the ID \"%s\".", project));
+            throw new IllegalArgumentException(String.format("Could not find a project with the ID \"%s\".", projectId));
         }
         Task newTask = new Task(nextTaskId(), description, false);
         projectTasks.add(newTask);
         return newTask.getId();
     }
     
-
+    // Marks a task as done or not done
     public void setDone(long taskId, boolean done) {
         for (List<Task> projectTasks : tasks.values()) {
             for (Task task : projectTasks) {
@@ -44,22 +46,33 @@ public class TaskService {
                 }
             }
         }
-        throw new IllegalArgumentException(String.format("Could not find a task with an ID of %d.", taskId));
+        throw new IllegalArgumentException(String.format("Task with ID '%d' not found.", taskId));
     }
 
-    public void setDeadline(long taskId, String deadline) { 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy"); 
-        LocalDate parsedDeadline = LocalDate.parse(deadline, formatter); 
-        for (List<Task> projectTasks : tasks.values()) { 
-            for (Task task : projectTasks) { 
-                if (task.getId() == taskId) { 
-                    task.setDeadline(parsedDeadline); 
-                    return; 
-                } 
-            } 
-        } 
-        throw new IllegalArgumentException(String.format("Task %d not found.", taskId)); 
+    public void setDeadline(String projectId, long taskId, String deadline) {
+        // Validate that the project exists
+        List<Task> projectTasks = tasks.get(projectId);
+        if (projectTasks == null) {
+            throw new IllegalArgumentException(String.format("Could not find a project with the ID \"%s\".", projectId));
+        }
+    
+        // Parse the deadline
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate parsedDeadline = LocalDate.parse(deadline, formatter);
+    
+        // Validate that the task belongs to the project
+        for (Task task : projectTasks) {
+            if (task.getId() == taskId) {
+                // Task belongs to the project; set the deadline
+                task.setDeadline(parsedDeadline);
+                return;
+            }
+        }
+    
+        // If no matching task is found in the project, throw an exception
+        throw new IllegalArgumentException(String.format("Task with ID '%d' not found in project '%s'.", taskId, projectId));
     }
+    
     
   public Map<String, Map<String, List<Map<String, Object>>>> viewByDeadline() {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");

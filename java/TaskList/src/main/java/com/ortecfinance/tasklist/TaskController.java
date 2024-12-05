@@ -2,7 +2,7 @@ package com.ortecfinance.tasklist;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;// this will import all below classes
+import org.springframework.web.bind.annotation.*;
 // import org.springframework.web.bind.annotation.GetMapping;
 // import org.springframework.web.bind.annotation.PathVariable;
 // import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;// this will import all below c
 // import org.springframework.web.bind.annotation.RequestParam;
 // import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;// this will import all below classes
+import java.util.*;
 // import java.util.HashMap;
 // import java.util.List;
 // import java.util.Map;
@@ -44,7 +44,7 @@ public class TaskController {
 
        // show project ID and the success message
         Map<String, String> response = new HashMap<>();
-        response.put("message", "project created successfully");
+        response.put("message", "Project created successfully");
         response.put("projectId", projectId);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -68,7 +68,7 @@ public class TaskController {
     //add Task deadline
     @PutMapping("/projects/{project_id}/tasks/{task_id}") 
     public ResponseEntity<String> updateTaskDeadline(@PathVariable String project_id, @PathVariable long task_id, @RequestParam String deadline) { 
-        taskService.setDeadline(task_id, deadline); 
+        taskService.setDeadline(project_id, task_id, deadline); 
         return new ResponseEntity<>("Task deadline updated successfully", HttpStatus.OK); 
     }
     //View tasks by deadline
@@ -80,7 +80,7 @@ public class TaskController {
 
     //NOTE: Below are additional endpoint added by me, as I am experimenting and practicing - this endpoints are not mentioned in README file
 
-    // get tasks
+    // get tasks - show all tasks witout deadline
     @GetMapping("/all_tasks")
     public ResponseEntity<List<Map<String, Object>>> getAllTasks() {
     List<Map<String, Object>> tasks = taskService.getTasks()
@@ -88,8 +88,8 @@ public class TaskController {
         .stream()
         .flatMap(entry -> entry.getValue().stream().map(task -> {
             Map<String, Object> taskDetails = new HashMap<>();
-            taskDetails.put("project", entry.getKey()); // Add project name
-            taskDetails.put("description", task.getDescription()); // Add task description
+            taskDetails.put("project", entry.getKey()); // add project name
+            taskDetails.put("description", task.getDescription()); // add task description
             taskDetails.put("done", task.isDone()); // indicate if the task is done
             return taskDetails;
         }))
